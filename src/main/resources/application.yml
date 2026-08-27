@@ -1,0 +1,58 @@
+server:
+  port: 8080
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  datasource:
+    url: jdbc:mysql://localhost:3306/employee?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+    username: root
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+# LangChain4j 配置
+langchain4j:
+  openai:
+    # API Key (必填)
+    api-key: ${OPENAI_API_KEY:}
+    # 基础 URL（Kimi 接口，国内直连可用）
+    # 本地 Ollama: http://localhost:11434/v1
+    # OpenAI: https://api.openai.com/v1
+    base-url: ${OPENAI_BASE_URL:https://api.moonshot.cn/v1}
+    # 模型名称（moonshot-v1-32k：非推理型，快且准，适合当前数据量）
+    # 需要更强推理时换回 kimi-k3（慢但准，温度须为 1）
+    model: ${OPENAI_MODEL:moonshot-v1-32k}
+    # 温度：非推理模型建议 0.2 减少发散；kimi-k3 只允许 1
+    temperature: 0.2
+    # 请求超时（秒）：推理模型 + 大上下文耗时较长，默认 60 秒不够用
+    timeout-seconds: 180
+
+# 知识库配置
+knowledge:
+  agent:
+    docs:
+      input-path: docs/input
+    # RAG 检索返回的最相关片段数量（统计类问题需要更多片段）
+    top-k: 10
+    # 文档分片大小（表格类文档建议 800，避免数据行被切碎）
+    chunk-size: 800
+    chunk-overlap: 100
+    # 混合检索每路召回的候选数量（重排前初筛池）
+    candidate-size: 20
+    # 数据库查询：当 MySQL 已配置时自动启用，结构化数据问题走 SQL 路径
+    database:
+      enabled: true
+      max-rows: 500
+    # 登录认证（生产环境请修改密码或对接企业 SSO）
+    auth:
+      enabled: true
+      users:
+        admin: ${AUTH_PASSWORD_ADMIN:admin123}
+        zhangsan: ${AUTH_PASSWORD_ZHANGSAN:zs@2026}
+
+logging:
+  level:
+    com.chenghao.study.knowledgeagent: INFO
+    dev.langchain4j: INFO
